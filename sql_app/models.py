@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Float, DateTime
 from sqlalchemy.orm import relationship
 
 from .database import Base
@@ -8,19 +8,40 @@ class User(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
-    email = Column(String(30), unique=True, index=True)
-    hashed_password = Column(String(30))
-    is_active = Column(Boolean, default=True)
+    referral_link = Column(String(50), unique=True, index=True)
+    credits = Column(Float, default=0.0)
+    administrator = Column(Boolean, default=False)
+    referraled_id = Column(Integer, nullable=True)
 
-    items = relationship("Item", back_populates="owner")
 
-
-class Item(Base):
-    __tablename__ = "items"
+class Plan(Base):
+    __tablename__ = "plans"
 
     id = Column(Integer, primary_key=True, index=True)
-    title = Column(String(30), index=True)
-    description = Column(String(30), index=True)
-    owner_id = Column(Integer, ForeignKey("users.id"))
+    name = Column(String(50), nullable=False)
+    num_servers = Column(Integer, nullable=False)
+    price = Column(Float, nullable=False)
 
-    owner = relationship("User", back_populates="items")
+
+class Voucher(Base):
+    __tablename__ = "voucher"
+
+    id = Column(Integer, primary_key=True, index=True)
+    code = Column(String(50), unique=True)
+    is_used = Column(Boolean, default=False)
+    amount = Column(Float, nullable=False)
+    start_date = Column(DateTime, nullable=False)
+    end_date = Column(DateTime, nullable=True)
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=True)
+
+
+# class PromoCode(Base):
+#     __tablename__ = "promo_code"
+#
+#     id = Column(Integer, primary_key=True, index=True)
+#     code = Column(String(50), unique=True)
+#     is_used = Column(Boolean, default=False)
+#     discount_percentage = Column(Float)
+#     start_date = Column(DateTime)
+#     end_date = Column(DateTime)
+#     user_id = Column(Integer, ForeignKey('users.id'), nullable=True)

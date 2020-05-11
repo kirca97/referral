@@ -1,37 +1,60 @@
-from typing import List
+from datetime import datetime
+from typing import List, Optional
 
-from pydantic import BaseModel
-
-
-class ItemBase(BaseModel):
-    title: str
-    description: str = None
+from pydantic import BaseModel, typing
 
 
-class ItemCreate(ItemBase):
-    pass
+class PlanBase(BaseModel):
+    name: str
+    num_servers: int
+    price: int
 
-
-class Item(ItemBase):
+class Plan(PlanBase):
     id: int
-    owner_id: int
 
     class Config:
         orm_mode = True
 
-
 class UserBase(BaseModel):
-    email: str
-
-
-class UserCreate(UserBase):
-    password: str
-
+    referral_link: str
+    credits: float
+    administrator: bool
+    referraled_id: int
 
 class User(UserBase):
     id: int
-    is_active: bool
-    items: List[Item] = []
 
     class Config:
         orm_mode = True
+
+class VoucherBase(BaseModel):
+    amount: float
+    start_date: datetime
+
+
+# class VoucherCreate(VoucherBase):
+
+
+class Voucher(VoucherBase):
+    id: int
+    code: str
+    is_used: bool
+    end_date: Optional[datetime]
+    user_id: Optional[int]
+
+    class Config:
+        orm_mode = True
+
+# class PromoCodeBase(BaseModel):
+#     code: str
+#     is_used: bool
+#     discount_percentage: float
+#     start_date: datetime
+#     end_date: datetime
+#     user_id: datetime
+#
+# class PromoCode(PromoCodeBase):
+#     id: int
+#
+#     class Config:
+#         orm_mode = True
