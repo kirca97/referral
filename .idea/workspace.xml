@@ -2,11 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="66f39f2a-20d3-4a27-bfd8-525a64be519d" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/sql_app/crud.py" beforeDir="false" afterPath="$PROJECT_DIR$/sql_app/crud.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sql_app/database.py" beforeDir="false" afterPath="$PROJECT_DIR$/sql_app/database.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/sql_app/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/sql_app/main.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/sql_app/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/sql_app/models.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/sql_app/schemas.py" beforeDir="false" afterPath="$PROJECT_DIR$/sql_app/schemas.py" afterDir="false" />
@@ -64,8 +61,17 @@
       <option name="presentableId" value="Default" />
       <updated>1588975242843</updated>
       <workItem from="1588975244619" duration="4382000" />
-      <workItem from="1589219697980" duration="7481000" />
+      <workItem from="1589219697980" duration="7841000" />
+      <workItem from="1589304692505" duration="7290000" />
     </task>
+    <task id="LOCAL-00001" summary="Second commit">
+      <created>1589227253746</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1589227253746</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -76,10 +82,16 @@
       <map>
         <entry key="MAIN">
           <value>
-            <State />
+            <State>
+              <option name="COLUMN_ORDER" />
+            </State>
           </value>
         </entry>
       </map>
     </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Second commit" />
+    <option name="LAST_COMMIT_MESSAGE" value="Second commit" />
   </component>
 </project>

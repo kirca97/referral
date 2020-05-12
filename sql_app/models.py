@@ -35,13 +35,13 @@ class Voucher(Base):
     user_id = Column(Integer, ForeignKey('users.id'), nullable=True)
 
 
-# class PromoCode(Base):
-#     __tablename__ = "promo_code"
-#
-#     id = Column(Integer, primary_key=True, index=True)
-#     code = Column(String(50), unique=True)
-#     is_used = Column(Boolean, default=False)
-#     discount_percentage = Column(Float)
-#     start_date = Column(DateTime)
-#     end_date = Column(DateTime)
-#     user_id = Column(Integer, ForeignKey('users.id'), nullable=True)
+class PromoCode(Base):
+    __tablename__ = "promo_code"
+
+    id = Column(Integer, primary_key=True, index=True)
+    code = Column(String(50), unique=True)
+    is_used = Column(Boolean, default=False)
+    discount_percentage = Column(Float)
+    start_date = Column(DateTime)
+    end_date = Column(DateTime)
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=True)

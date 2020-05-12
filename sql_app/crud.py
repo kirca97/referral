@@ -1,5 +1,6 @@
 import random
 import string
+from datetime import datetime
 
 from sqlalchemy.orm import Session
 
@@ -37,6 +38,15 @@ def get_plan_by_name(db: Session, plan_name: str):
 def get_plan_by_id(db: Session, plan_id: int):
     return db.query(models.Plan).filter(models.Plan.id == plan_id).first()
 
+def get_promo_codes(db: Session, skip: int = 0, limit: int = 100):
+    return db.query(models.PromoCode).filter(models.PromoCode.is_used == 0).offset(skip).limit(limit).all()
+
+def get_promo_code_by_id(db: Session, promo_code_id: int):
+    return db.query(models.PromoCode).filter(models.PromoCode.id == promo_code_id).first()
+
+def get_promo_code_by_code(db: Session, promo_code_code: str):
+    return db.query(models.PromoCode).filter(models.PromoCode.code == promo_code_code).first()
+
 def get_users(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.User).offset(skip).limit(limit).all()
 
@@ -46,6 +56,43 @@ def get_user(db: Session, user_id: int):
 def get_vouchers(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.Voucher).filter(models.Voucher.is_used == False).offset(skip).limit(limit).all()
 
+def verify_voucher(db: Session, voucher_code: str):
+    return db.query(models.Voucher).filter(models.Voucher.code == voucher_code).first()
+
+def add_credits_to_user(db: Session, user_id: int, credits: float):
+    db_user = db.query(models.User).filter(models.User.id == user_id).first()
+    db_user.credits += credits
+    db.commit()
+
+def used_voucher(db: Session, voucher_code: str, user_id: int):
+    db_voucher = db.query(models.Voucher).filter(models.Voucher.code == voucher_code).first()
+    db_voucher.is_used = 1
+    db_voucher.end_date = datetime.now()
+    db_voucher.user_id = user_id
+    db.commit()
+
+def create_user(db: Session, user_id: int, administrator: bool, referraled_id: int):
+    referral_link = ''.join(random.choices(string.ascii_lowercase + string.digits, k=10))
+    db_user = models.User(id=user_id, administrator=administrator, referral_link=referral_link, referraled_id=referraled_id)
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    return db_user
+
+def create_promo_code(db: Session, promo_code: schemas.PromoCodeBase):
+    promo_code_postoi = "test"
+    while promo_code_postoi != None:
+        random_code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
+        promo_code_postoi = db.query(models.PromoCode).filter(models.PromoCode.code == random_code).first()
+
+    # print(random_code)
+    db_promo_code = models.PromoCode(code=random_code,
+                                discount_percentage=promo_code.discount_percentage,
+                                start_date=promo_code.start_date)
+    db.add(db_promo_code)
+    db.commit()
+    db.refresh(db_promo_code)
+    return db_promo_code
 
 # def get_user(db: Session, user_id: int):
 #     return db.query(models.User).filter(models.User.id == user_id).first()
