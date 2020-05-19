@@ -71,6 +71,13 @@ def used_voucher(db: Session, voucher_code: str, user_id: int):
     db_voucher.user_id = user_id
     db.commit()
 
+def used_promo_code(db: Session, promo_code_code: str, user_id: int):
+    db_promo_code = db.query(models.PromoCode).filter(models.PromoCode.code == promo_code_code).first()
+    db_promo_code.is_used = 1
+    db_promo_code.end_date = datetime.now()
+    db_promo_code.user_id = user_id
+    db.commit()
+
 def create_user(db: Session, user_id: int, administrator: bool, referraled_id: int):
     referral_link = ''.join(random.choices(string.ascii_lowercase + string.digits, k=10))
     db_user = models.User(id=user_id, administrator=administrator, referral_link=referral_link, referraled_id=referraled_id)
@@ -93,6 +100,8 @@ def create_promo_code(db: Session, promo_code: schemas.PromoCodeBase):
     db.commit()
     db.refresh(db_promo_code)
     return db_promo_code
+
+
 
 # def get_user(db: Session, user_id: int):
 #     return db.query(models.User).filter(models.User.id == user_id).first()

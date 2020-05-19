@@ -59,3 +59,12 @@ class PromoCode(PromoCodeBase):
 
     class Config:
         orm_mode = True
+
+class SuccessfulPayment(BaseModel):
+    user_id: int
+    amount: float
+    credits: float
+    promo_code: Optional[str]
+
+    class Config:
+        orm_mode = True

@@ -7,6 +7,85 @@ from sqlalchemy.orm import Session
 from . import crud, models, schemas
 from .database import SessionLocal, engine
 
+# import configparser
+#
+# import netifaces
+# import requests
+# from consul import Consul, Check
+# # from fastapi import FastAPI
+# from lorem.text import TextLorem
+#
+# consul_port = 8500
+# service_name = "referral"
+# service_port = 8010
+#
+#
+# def get_ip():
+#     config_parser = configparser.ConfigParser()
+#     config_file = "config.ini"
+#     config_parser.read(config_file)
+#     interface_name = config_parser['NETWORK']['interface']
+#     ip = netifaces.ifaddresses(interface_name)[netifaces.AF_INET][0]["addr"]
+#     return ip
+#
+#
+# def register_to_consul():
+#     consul = Consul(host="consul", port=consul_port)
+#
+#     agent = consul.agent
+#
+#     service = agent.service
+#
+#     ip = get_ip()
+#
+#     check = Check.http(f"http://{ip}:{service_port}/", interval="10s", timeout="5s", deregister="1s")
+#
+#     service.register(service_name, service_id=service_name, address=ip, port=service_port, check=check)
+#
+#
+# def get_service(service_id):
+#     consul = Consul(host="consul", port=consul_port)
+#
+#     agent = consul.agent
+#
+#     service_list = agent.services()
+#
+#     service_info = service_list[service_id]
+#
+#     return service_info['Address'], service_info['Port']
+#
+#
+# app = FastAPI()
+#
+# # register_to_consul()
+#
+# print("OK service1")
+#
+#
+# @app.get("/")
+# def index():
+#     return "Service1"
+#
+#
+# @app.get("/sentence-dependent")
+# def get_sentence_using_service_2():
+#     address, port = get_service("service2")
+#
+#     words = requests.get(f"http://{address}:{port}/words").json()
+#
+#     words = words["words"]
+#
+#     lorem = TextLorem(words=words)
+#
+#     return {"sentence": lorem.sentence()}
+#
+#
+# @app.get("/sentence-independent")
+# def get_sentence_using_own_words():
+#     lorem = TextLorem()
+#
+#     return {"sentence": lorem.sentence()}
+
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
@@ -58,6 +137,18 @@ users_micro = [
 "id": 44
 }
 ]
+
+def get_user(user_id, db):
+    db_user = crud.get_user(db=db, user_id=user_id)
+    if db_user is None:
+        db_user = [x for x in users_micro if x['id'] == user_id][0]
+        print(db_user)
+        if db_user is None:
+            raise HTTPException(status_code=404, detail="User not found")
+        crud.create_user(db=db, user_id=db_user['id'], administrator=db_user['administrator'],
+                         referraled_id=db_user['referraled_id'])
+    db_user = crud.get_user(db=db, user_id=user_id)
+    return db_user
 
 
 @app.get("/plans")
@@ -121,13 +212,7 @@ def add_credits_to_user(user_id: int, voucher_code: str, db: Session = Depends(g
         raise HTTPException(status_code=404, detail="Voucher not found")
     if db_voucher.is_used == 1:
         raise HTTPException(status_code=404, detail="Voucher is already used")
-    db_user = crud.get_user(db=db, user_id=user_id)
-    if db_user is None:
-        db_user = [x for x in users_micro if x['id'] == user_id][0]
-        print(db_user)
-        if db_user is None:
-            raise HTTPException(status_code=404, detail="User not found")
-        crud.create_user(db=db, user_id=db_user['id'], administrator=db_user['administrator'], referraled_id=db_user['referraled_id'])
+    db_user = get_user(user_id, db)
     crud.add_credits_to_user(db=db, user_id=user_id, credits=db_voucher.amount)
     crud.used_voucher(db=db, voucher_code=voucher_code, user_id=user_id)
     return {"name": "successful"}
@@ -136,15 +221,7 @@ def add_credits_to_user(user_id: int, voucher_code: str, db: Session = Depends(g
 
 @app.get("/referral_link/{user_id}")
 def get_referral(user_id: int, db: Session = Depends(get_db)):
-    db_user = crud.get_user(db=db, user_id=user_id)
-    if db_user is None:
-        db_user = [x for x in users_micro if x['id'] == user_id][0]
-        print(db_user)
-        if db_user is None:
-            raise HTTPException(status_code=404, detail="User not found")
-        crud.create_user(db=db, user_id=db_user['id'], administrator=db_user['administrator'],
-                         referraled_id=db_user['referraled_id'])
-    db_user = crud.get_user(db=db, user_id=user_id)
+    db_user = get_user(user_id, db)
     return db_user.referral_link
 
 
@@ -187,37 +264,14 @@ def get_promo_code_by_code(promo_code_code: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail="Promocode doesn't exists")
     return db_promo_code
 
-
-# @app.post("/users/", response_model=schemas.User)
-# def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
-#     db_user = crud.get_user_by_email(db, email=user.email)
-#     if db_user:
-#         raise HTTPException(status_code=400, detail="Email already registered")
-#     return crud.create_user(db=db, user=user)
-#
-#
-# @app.get("/users/", response_model=List[schemas.User])
-# def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-#     users = crud.get_users(db, skip=skip, limit=limit)
-#     return users
-#
-#
-# @app.get("/users/{user_id}", response_model=schemas.User)
-# def read_user(user_id: int, db: Session = Depends(get_db)):
-#     db_user = crud.get_user(db, user_id=user_id)
-#     if db_user is None:
-#         raise HTTPException(status_code=404, detail="User not found")
-#     return db_user
-#
-#
-# @app.post("/users/{user_id}/items/", response_model=schemas.Item)
-# def create_item_for_user(
-#     user_id: int, item: schemas.ItemCreate, db: Session = Depends(get_db)
-# ):
-#     return crud.create_user_item(db=db, item=item, user_id=user_id)
-#
-#
-# @app.get("/items/", response_model=List[schemas.Item])
-# def read_items(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-#     items = crud.get_items(db, skip=skip, limit=limit)
-#     return items
+@app.post("/successfulpayment")
+def successful_payment(successful: schemas.SuccessfulPayment, db: Session = Depends(get_db)):
+    db_user = get_user(successful.user_id, db)
+    if(db_user.referraled_id != None):
+        db_referraled_user = crud.get_user(db, db_user.referraled_id)
+        crud.add_credits_to_user(db, db_referraled_user.id, successful.amount * 0.1)
+    crud.add_credits_to_user(db, db_user.id, successful.credits * (-1))
+    db_promo_code = crud.get_promo_code_by_code(db, successful.promo_code)
+    if(db_promo_code != None):
+        crud.used_promo_code(db, db_promo_code.code, db_user.id)
+    return {"successful": "payment"}
