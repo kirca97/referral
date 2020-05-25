@@ -7,7 +7,7 @@ from . import crud, models, schemas
 from .database import SessionLocal, engine
 import jwt
 import configparser
-
+import socket
 import netifaces
 import requests
 from consul import Consul, Check
@@ -18,49 +18,20 @@ service_name = "referral"
 service_port = 8000
 
 
-def get_ip():
-    config_parser = configparser.ConfigParser()
-    config_file = "config.ini"
-    config_parser.read(config_file)
-    interface_name = config_parser['NETWORK']['interface']
-    ip = netifaces.ifaddresses(interface_name)[netifaces.AF_INET][0]["addr"]
-    return ip
-
-
-def register_to_consul():
-    consul = Consul(host="consul", port=consul_port)
-
-    agent = consul.agent
-
-    service = agent.service
-
-    ip = get_ip()
-
-    check = Check.http(f"http://{ip}:{service_port}/", interval="10s", timeout="5s", deregister="1s")
-
-    service.register(service_name, service_id=service_name, address=ip, port=service_port, check=check)
-
-
-def get_service(service_id):
-    consul = Consul(host="consul", port=consul_port)
-
-    agent = consul.agent
-
-    service_list = agent.services()
-
-    service_info = service_list[service_id]
-
-    return service_info['Address'], service_info['Port']
-
-
 if __name__ == '__main__':
 
     models.Base.metadata.create_all(bind=engine)
 
     app = FastAPI()
-
-    register_to_consul()
-
+    consul = Consul(host='consul', port=8500)
+    agent = consul.agent
+    service = agent.service
+    check = Check.http('http://referral:5000/',
+                       interval='10s', timeout='5s', deregister='10s')
+    ip = socket.gethostbyname('referral')
+    service.register('referral', service_id='referral',
+                     address=ip, port=5001, check=check)
+    print('registered with consul')
 
 def get_db():
     try:

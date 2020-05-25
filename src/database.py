@@ -2,8 +2,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-# SQLALCHEMY_DATABASE_URL = "sqlite:///./src.db"
-SQLALCHEMY_DATABASE_URL = "mysql+mysqlconnector://root:admin@localhost:3306/referral"
+SQLALCHEMY_DATABASE_URL = "mysql+mysqlconnector://referral:password@referral-db:3306/referral"
 
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL
