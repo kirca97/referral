@@ -12,26 +12,23 @@ import netifaces
 import requests
 from consul import Consul, Check
 from lorem.text import TextLorem
-
+import time
 consul_port = 8500
-service_name = "referral"
-service_port = 8000
 
+time.sleep(10)
 
-if __name__ == '__main__':
+models.Base.metadata.create_all(bind=engine)
 
-    models.Base.metadata.create_all(bind=engine)
+app = FastAPI()
 
-    app = FastAPI()
-    consul = Consul(host='consul', port=8500)
-    agent = consul.agent
-    service = agent.service
-    check = Check.http('http://referral:5000/',
-                       interval='10s', timeout='5s', deregister='10s')
-    ip = socket.gethostbyname('referral')
-    service.register('referral', service_id='referral',
-                     address=ip, port=5001, check=check)
-    print('registered with consul')
+consul = Consul(host='consul', port=8500)
+agent = consul.agent
+service = agent.service
+check = Check.http('http://referral:5050/',
+                   interval='10s', timeout='5s', deregister='10s')
+ip = socket.gethostbyname('referral')
+service.register('referral', service_id='referral',
+                 address=ip, port=5050, check=check)
 
 def get_db():
     try:
@@ -49,8 +46,8 @@ def check_administrator(auth):
         decoded = jwt.decode(
             credentials, key=public_key, verify=False
         )
-        if (decoded['resource_access']['account']['roles'].contains('administrator')):
-            administrator = 1
+        if (decoded['resource_access']['account']['roles'].__contains__('administrator')):
+            return True
         else:
             raise HTTPException(status_code=400, detail="User is not an administrator")
     else:
@@ -59,6 +56,7 @@ def check_administrator(auth):
 
 def get_user(user_id, db, auth):
     db_user = crud.get_user(db=db, user_id=user_id)
+    administrator = False
     if db_user is None:
         scheme, credentials = get_authorization_scheme_param(auth)
         if credentials:
@@ -68,12 +66,17 @@ def get_user(user_id, db, auth):
                 credentials, key=public_key, verify=False
             )
             user_id = decoded.sub
-            if (decoded['resource_access']['account']['roles'].contains('administrator')):
-                administrator = 1
+            if (decoded['resource_access']['account']['roles'].__contains__('administrator')):
+                administrator = True
         else:
             raise HTTPException(status_code=400, detail="Authorization failed")
     db_user = crud.create_user(db=db, user_id=user_id, administrator=administrator)
     return db_user
+
+
+@app.get("/")
+def get_root():
+    return "refferal"
 
 
 @app.get("/plans")
