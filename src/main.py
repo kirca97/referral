@@ -19,7 +19,7 @@ time.sleep(10)
 
 models.Base.metadata.create_all(bind=engine)
 
-app = FastAPI()
+app = FastAPI(docs_url='/docs', openapi_url='/openapi.json')
 
 consul = Consul(host='consul', port=8500)
 agent = consul.agent
