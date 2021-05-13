@@ -12,7 +12,7 @@ mysql-connector-python==8.0.20
 netifaces==0.10.9
 protobuf==3.12.0
 pycparser==2.20
-pydantic==1.5.1
+pydantic==1.6.2
 PyJWT==1.7.1
 python-consul==1.1.0
 requests==2.23.0
